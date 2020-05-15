@@ -1,7 +1,8 @@
 import glob
 import os
-from typing import final
+import traceback
 
+from com.bankingsystem.database.Bank import Bank
 from com.bankingsystem.database.Customer import Customer
 from com.bankingsystem.transactionlog.Deposit import Deposit
 from com.bankingsystem.transactionlog.Withdrawal import Withdrawal
@@ -27,8 +28,6 @@ class Database:
             self.__put_banks()
 
 
-
-    @final
     def __put_banks(self):
         bank_names = ('BNI', 'BRI', 'BTN', 'MANDIRI')
         for bank in bank_names:
@@ -40,32 +39,34 @@ class Database:
                     temp = bf.readline().split(';')
                     bank_name = temp[0]
                     bank_code = int(temp[1])
-                    customers = []
+                    customers = {}
                     for filename in glob.glob(os.path.join(f'Banks/{bank}/Customers', '*.txt')):
                         with open(filename, 'r') as cf:
-                            customer_data = []
                             transaction_log = []
                             money = 0
                             cnt = 0
                             corrupted = False
+                            customer_data = []
                             for line in cf:
-                                if cnt is 0:
+                                if cnt == 0:
                                     customer_data = line.split(';')
+                                    customer_data.pop()
                                 else:
                                     temp = line.split(';')
-                                    if int(temp[0]) is 0:
+                                    temp.pop()
+                                    if int(temp[0]) == 0:
                                         #Deposit
                                         transaction_log.append(Deposit(int(temp[1]),temp[2]))
                                         money += int(temp[1])
-                                    elif int(temp[0]) is 1:
+                                    elif int(temp[0]) == 1:
                                         #Withdrawal
                                         transaction_log.append(Withdrawal(int(temp[1]),temp[2]))
                                         money -= int(temp[1])
-                                    elif int(temp[0]) is 2:
+                                    elif int(temp[0]) == 2:
                                         # Outbound Transfer
                                         transaction_log.append(OutboundTransfer(int(temp[1]), int(temp[2]), temp[3]))
                                         money -= int(temp[1])
-                                    elif int(temp[0]) is 2:
+                                    elif int(temp[0]) == 2:
                                         # Inbound Transfer
                                         transaction_log.append(InboundTransfer(int(temp[1]), int(temp[2]), temp[3]))
                                         money += int(temp[1])
@@ -73,10 +74,16 @@ class Database:
                                         self.error_log.append(f"{filename} is corrupted")
                                         corrupted = True
                                         registered_ktp.add(customer_data[3])
+                                cnt += 1
                             if not corrupted:
-                                customers.append(Customer(customer_data[0], customer_data[1], customer_data[2], customer_data[3], transaction_log, money, bank_name))
+                                print(customer_data)
+                                customers[int(customer_data[2])] =  Customer(customer_data[0], customer_data[1], customer_data[2], customer_data[3], transaction_log, money, bank_name)
                     self.banks.append(Bank(bank_name, bank_code, customers, registered_ktp))
-
-                except IndexError:
+                    print(f'Successfully Added {bank_name}')
+                except Exception as err:
                     self.error_log.append(f"{bank_name} is corrupted")
+                    print(f"{bank_name} is corrupted")
+                    traceback.print_exc()
+
+
 

@@ -5,7 +5,7 @@ class Bank:
     def __init__(self, bank_name, bank_code, customers, registered_ktp):
         self.__bank_name = bank_name
         self.__bank_code = bank_code
-        self.__customers = dict(customers)
+        self.__customers = customers
         self.__registered_ktp = registered_ktp
 
     def __add_customer(self, username, password, account_number, ktp_number):

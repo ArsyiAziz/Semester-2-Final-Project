@@ -11,6 +11,7 @@ class Portal:
             raise Exception('Invalid class creation')
         else:
             Portal.__instance = self
+            __database = Database()
 
     @staticmethod
     def get_instance():

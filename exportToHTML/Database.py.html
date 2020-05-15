@@ -1,0 +1,106 @@
+<html>
+<head>
+<title>Database.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #ff6188; font-style: italic;}
+.s1 { color: #fcfcfa;}
+.s2 { color: #939293;}
+.s3 { color: #ff6188;}
+.s4 { color: #ffd866;}
+.s5 { color: #ab9df2;}
+.s6 { color: #78dce8;}
+.s7 { color: #727072; font-style: italic;}
+</style>
+</head>
+<body bgcolor="#2d2a2e">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Database.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">glob</span>
+<span class="s0">import </span><span class="s1">os</span>
+<span class="s0">from </span><span class="s1">typing </span><span class="s0">import </span><span class="s1">final</span>
+
+<span class="s0">from </span><span class="s1">com</span><span class="s2">.</span><span class="s1">bankingsystem</span><span class="s2">.</span><span class="s1">database</span><span class="s2">.</span><span class="s1">Customer </span><span class="s0">import </span><span class="s1">Customer</span>
+<span class="s0">from </span><span class="s1">com</span><span class="s2">.</span><span class="s1">bankingsystem</span><span class="s2">.</span><span class="s1">transactionlog</span><span class="s2">.</span><span class="s1">Deposit </span><span class="s0">import </span><span class="s1">Deposit</span>
+<span class="s0">from </span><span class="s1">com</span><span class="s2">.</span><span class="s1">bankingsystem</span><span class="s2">.</span><span class="s1">transactionlog</span><span class="s2">.</span><span class="s1">Withdrawal </span><span class="s0">import </span><span class="s1">Withdrawal</span>
+<span class="s0">from </span><span class="s1">com</span><span class="s2">.</span><span class="s1">bankingsystem</span><span class="s2">.</span><span class="s1">transactionlog</span><span class="s2">.</span><span class="s1">InboundTransfer </span><span class="s0">import </span><span class="s1">InboundTransfer</span>
+<span class="s0">from </span><span class="s1">com</span><span class="s2">.</span><span class="s1">bankingsystem</span><span class="s2">.</span><span class="s1">transactionlog</span><span class="s2">.</span><span class="s1">OutboundTransfer </span><span class="s0">import </span><span class="s1">OutboundTransfer</span>
+
+<span class="s0">class </span><span class="s1">Database</span><span class="s3">:</span>
+    <span class="s1">__instance </span><span class="s3">= </span><span class="s0">None</span>
+    <span class="s1">banks </span><span class="s3">= </span><span class="s2">[]</span>
+    <span class="s1">error_log </span><span class="s3">= </span><span class="s2">[]</span>
+
+    <span class="s3">@</span><span class="s1">staticmethod</span>
+    <span class="s0">def </span><span class="s1">get_instance</span><span class="s2">()</span><span class="s3">:</span>
+        <span class="s0">if </span><span class="s1">Database</span><span class="s2">.</span><span class="s1">__instance </span><span class="s0">is None</span><span class="s3">:</span>
+            <span class="s1">Database</span><span class="s2">()</span>
+        <span class="s0">return </span><span class="s1">Database</span><span class="s2">.</span><span class="s1">__instance</span>
+
+    <span class="s0">def </span><span class="s1">__init__</span><span class="s2">(</span><span class="s1">self</span><span class="s2">)</span><span class="s3">:</span>
+        <span class="s0">if </span><span class="s1">Database</span><span class="s2">.</span><span class="s1">__instance </span><span class="s0">is not None</span><span class="s3">:</span>
+            <span class="s0">raise </span><span class="s1">Exception</span><span class="s2">(</span><span class="s4">'Invalid class creation'</span><span class="s2">)</span>
+        <span class="s0">else</span><span class="s3">:</span>
+            <span class="s1">Database</span><span class="s2">.</span><span class="s1">__instance </span><span class="s3">= </span><span class="s1">self</span>
+            <span class="s1">self</span><span class="s2">.</span><span class="s1">__put_banks</span><span class="s2">()</span>
+
+
+
+    <span class="s3">@</span><span class="s1">final</span>
+    <span class="s0">def </span><span class="s1">__put_banks</span><span class="s2">(</span><span class="s1">self</span><span class="s2">)</span><span class="s3">:</span>
+        <span class="s1">bank_names </span><span class="s3">= </span><span class="s2">(</span><span class="s4">'BNI'</span><span class="s2">, </span><span class="s4">'BRI'</span><span class="s2">, </span><span class="s4">'BTN'</span><span class="s2">, </span><span class="s4">'MANDIRI'</span><span class="s2">)</span>
+        <span class="s0">for </span><span class="s1">bank </span><span class="s0">in </span><span class="s1">bank_names</span><span class="s3">:</span>
+            <span class="s1">bank_code </span><span class="s3">= </span><span class="s5">0</span>
+            <span class="s1">registered_ktp </span><span class="s3">= </span><span class="s2">{</span><span class="s5">0</span><span class="s2">}</span>
+            <span class="s1">bank_name </span><span class="s3">= </span><span class="s0">None</span>
+            <span class="s0">with </span><span class="s1">open</span><span class="s2">(</span><span class="s4">f'Banks/</span><span class="s6">{</span><span class="s1">bank</span><span class="s6">}</span><span class="s4">/info.txt'</span><span class="s2">) </span><span class="s0">as </span><span class="s1">bf</span><span class="s3">:</span>
+                <span class="s0">try</span><span class="s3">:</span>
+                    <span class="s1">temp </span><span class="s3">= </span><span class="s1">bf</span><span class="s2">.</span><span class="s1">readline</span><span class="s2">().</span><span class="s1">split</span><span class="s2">(</span><span class="s4">';'</span><span class="s2">)</span>
+                    <span class="s1">bank_name </span><span class="s3">= </span><span class="s1">temp</span><span class="s2">[</span><span class="s5">0</span><span class="s2">]</span>
+                    <span class="s1">bank_code </span><span class="s3">= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">1</span><span class="s2">])</span>
+                    <span class="s1">customers </span><span class="s3">= </span><span class="s2">[]</span>
+                    <span class="s0">for </span><span class="s1">filename </span><span class="s0">in </span><span class="s1">glob</span><span class="s2">.</span><span class="s1">glob</span><span class="s2">(</span><span class="s1">os</span><span class="s2">.</span><span class="s1">path</span><span class="s2">.</span><span class="s1">join</span><span class="s2">(</span><span class="s4">f'Banks/</span><span class="s6">{</span><span class="s1">bank</span><span class="s6">}</span><span class="s4">/Customers'</span><span class="s2">, </span><span class="s4">'*.txt'</span><span class="s2">))</span><span class="s3">:</span>
+                        <span class="s0">with </span><span class="s1">open</span><span class="s2">(</span><span class="s1">filename</span><span class="s2">, </span><span class="s4">'r'</span><span class="s2">) </span><span class="s0">as </span><span class="s1">cf</span><span class="s3">:</span>
+                            <span class="s1">customer_data </span><span class="s3">= </span><span class="s2">[]</span>
+                            <span class="s1">transaction_log </span><span class="s3">= </span><span class="s2">[]</span>
+                            <span class="s1">money </span><span class="s3">= </span><span class="s5">0</span>
+                            <span class="s1">cnt </span><span class="s3">= </span><span class="s5">0</span>
+                            <span class="s1">corrupted </span><span class="s3">= </span><span class="s0">False</span>
+                            <span class="s0">for </span><span class="s1">line </span><span class="s0">in </span><span class="s1">cf</span><span class="s3">:</span>
+                                <span class="s0">if </span><span class="s1">cnt </span><span class="s0">is </span><span class="s5">0</span><span class="s3">:</span>
+                                    <span class="s1">customer_data </span><span class="s3">= </span><span class="s1">line</span><span class="s2">.</span><span class="s1">split</span><span class="s2">(</span><span class="s4">';'</span><span class="s2">)</span>
+                                <span class="s0">else</span><span class="s3">:</span>
+                                    <span class="s1">temp </span><span class="s3">= </span><span class="s1">line</span><span class="s2">.</span><span class="s1">split</span><span class="s2">(</span><span class="s4">';'</span><span class="s2">)</span>
+                                    <span class="s0">if </span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">0</span><span class="s2">]) </span><span class="s0">is </span><span class="s5">0</span><span class="s3">:</span>
+                                        <span class="s7">#Deposit</span>
+                                        <span class="s1">transaction_log</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s1">Deposit</span><span class="s2">(</span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">1</span><span class="s2">]),</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">2</span><span class="s2">]))</span>
+                                        <span class="s1">money </span><span class="s3">+= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">1</span><span class="s2">])</span>
+                                    <span class="s0">elif </span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">0</span><span class="s2">]) </span><span class="s0">is </span><span class="s5">1</span><span class="s3">:</span>
+                                        <span class="s7">#Withdrawal</span>
+                                        <span class="s1">transaction_log</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s1">Withdrawal</span><span class="s2">(</span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">1</span><span class="s2">]),</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">2</span><span class="s2">]))</span>
+                                        <span class="s1">money </span><span class="s3">-= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">1</span><span class="s2">])</span>
+                                    <span class="s0">elif </span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">0</span><span class="s2">]) </span><span class="s0">is </span><span class="s5">2</span><span class="s3">:</span>
+                                        <span class="s7"># Outbound Transfer</span>
+                                        <span class="s1">transaction_log</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s1">OutboundTransfer</span><span class="s2">(</span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">1</span><span class="s2">]), </span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">2</span><span class="s2">]), </span><span class="s1">temp</span><span class="s2">[</span><span class="s5">3</span><span class="s2">]))</span>
+                                        <span class="s1">money </span><span class="s3">-= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">1</span><span class="s2">])</span>
+                                    <span class="s0">elif </span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">0</span><span class="s2">]) </span><span class="s0">is </span><span class="s5">2</span><span class="s3">:</span>
+                                        <span class="s7"># Inbound Transfer</span>
+                                        <span class="s1">transaction_log</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s1">InboundTransfer</span><span class="s2">(</span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">1</span><span class="s2">]), </span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">2</span><span class="s2">]), </span><span class="s1">temp</span><span class="s2">[</span><span class="s5">3</span><span class="s2">]))</span>
+                                        <span class="s1">money </span><span class="s3">+= </span><span class="s1">int</span><span class="s2">(</span><span class="s1">temp</span><span class="s2">[</span><span class="s5">1</span><span class="s2">])</span>
+                                    <span class="s0">else</span><span class="s3">:</span>
+                                        <span class="s1">self</span><span class="s2">.</span><span class="s1">error_log</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s4">f&quot;</span><span class="s6">{</span><span class="s1">filename</span><span class="s6">} </span><span class="s4">is corrupted&quot;</span><span class="s2">)</span>
+                                        <span class="s1">corrupted </span><span class="s3">= </span><span class="s0">True</span>
+                                        <span class="s1">registered_ktp</span><span class="s2">.</span><span class="s1">add</span><span class="s2">(</span><span class="s1">customer_data</span><span class="s2">[</span><span class="s5">3</span><span class="s2">])</span>
+                            <span class="s0">if not </span><span class="s1">corrupted</span><span class="s3">:</span>
+                                <span class="s1">customers</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s1">Customer</span><span class="s2">(</span><span class="s1">customer_data</span><span class="s2">[</span><span class="s5">0</span><span class="s2">], </span><span class="s1">customer_data</span><span class="s2">[</span><span class="s5">1</span><span class="s2">], </span><span class="s1">customer_data</span><span class="s2">[</span><span class="s5">2</span><span class="s2">], </span><span class="s1">customer_data</span><span class="s2">[</span><span class="s5">3</span><span class="s2">], </span><span class="s1">transaction_log</span><span class="s2">, </span><span class="s1">money</span><span class="s2">, </span><span class="s1">bank_name</span><span class="s2">))</span>
+                    <span class="s1">self</span><span class="s2">.</span><span class="s1">banks</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s1">Bank</span><span class="s2">(</span><span class="s1">bank_name</span><span class="s2">, </span><span class="s1">bank_code</span><span class="s2">, </span><span class="s1">customers</span><span class="s2">, </span><span class="s1">registered_ktp</span><span class="s2">))</span>
+
+                <span class="s0">except </span><span class="s1">IndexError</span><span class="s3">:</span>
+                    <span class="s1">self</span><span class="s2">.</span><span class="s1">error_log</span><span class="s2">.</span><span class="s1">append</span><span class="s2">(</span><span class="s4">f&quot;</span><span class="s6">{</span><span class="s1">bank_name</span><span class="s6">} </span><span class="s4">is corrupted&quot;</span><span class="s2">)</span>
+
+</pre>
+</body>
+</html>
