@@ -1,5 +1,3 @@
-from tkinter import *
-
 from com.bankingsystem.database.Database import Database
 
 
@@ -11,24 +9,26 @@ class Portal:
             raise Exception('Invalid class creation')
         else:
             Portal.__instance = self
-            __database = Database()
+            self.__database = Database.get_instance()
+            self.current_bank = None
+            self.current_customer = None
 
     @staticmethod
     def get_instance():
         if Portal.__instance is None:
-            __instance = Portal()
+            self.__instance = Portal()
         return Portal.__instance
 
-    def login(self):
-        pass
+    def login(self, bank, account_number, password):
+        try:
+            self.current_bank = self.__database.get_bank(bank)
+            if self.current_bank.get_customer(account_number).login(password):
+                self.current_customer = self.current_bank.get_customer(account_number)
+                return True
+            else:
+                return False
+        except:
+            pass
+
     def logout(self):
         pass
-
-    def interface(self):
-        master = Tk()
-        master.title('Banking System 9000')
-        canvas = Scale(master, from_=0, to=42)
-        canvas.pack()
-        button = Button(master, text='Stop', width=25, command=master.destroy)
-        button.pack()
-        master.mainloop()

@@ -14,29 +14,36 @@ class Customer():
     def get_bank(self):
         return bank
 
-    def _get_balance(self):
+    def get_balance(self):
         if self.__authenticated:
             return self.__balance
 
-    def _login(self, password):
+    def login(self, password):
         if password == self.__password:
             self.__authenticated = True
+            return True
+        else:
+            return False
 
-    def _deposit(self, amount):
+    def deposit(self, amount):
         if self.__authenticated:
             self.__balance += amount
             self.__update_transaction_log(Deposit(amount))
 
-    def _withdraw(self, amount):
+    def withdraw(self, amount):
         if self.__authenticated and self.__balance >= amount:
             self.__balance -= amount
             self.__update_transaction_log(Withdrawal(amount))
             return True
 
-    def _logout(self):
+    def logout(self):
         self.__authenticated = False
 
-    def _outbound_transfer(self, amount, recipient):
+    def __str__(self):
+        if self.__authenticated:
+            return self.__account_number
+
+    def outbound_transfer(self, amount, recipient):
         if self.__authenticated and self.__balance >= amount:
             self.__balance -= amount
 
@@ -49,17 +56,17 @@ class Customer():
     def __is_authenticated(self):
         return self.__authenticated
 
-    def _change_password(self, database):
+    def change_password(self, database):
         if self.__authenticated:
             tries = 3
             while tries >= 0:
                 pass
 
 
-    def _get_account_number(self):
+    def get_account_number(self):
         return self.__account_number
 
-    def _get_transaction_log(self):
+    def get_transaction_log(self):
         if self.__authenticated:
             return self.__transaction_log
 
