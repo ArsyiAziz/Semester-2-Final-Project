@@ -31,4 +31,4 @@ class Portal:
             pass
 
     def logout(self):
-        pass
+        self.current_customer.logout()

@@ -1,4 +1,3 @@
-
 class Customer():
     def __init__(self, username, password, account_number, ktp_number, transaction_log, balance, bank):
         super().__init__()
@@ -24,6 +23,10 @@ class Customer():
             return True
         else:
             return False
+
+    def get_name(self):
+        if self.__authenticated:
+            return self.__username
 
     def deposit(self, amount):
         if self.__authenticated:
@@ -62,12 +65,9 @@ class Customer():
             while tries >= 0:
                 pass
 
-
     def get_account_number(self):
         return self.__account_number
 
     def get_transaction_log(self):
         if self.__authenticated:
             return self.__transaction_log
-
-
