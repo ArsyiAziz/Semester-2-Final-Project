@@ -9,6 +9,7 @@ from com.bankingsystem.transactionlog.TransactionLog import *
 
 
 
+
 class Database:
     __instance = None
 
@@ -42,75 +43,80 @@ class Database:
         for error in self.error_log:
             print(error)
 
-    def update_user_password(self, customer, password):
+    def update_user_data(self, customer, password):
         with open(f'Banks/{customer.get_bank()}/Customers/{customer.get_account_number()}.txt', 'r') as file:
             data = file.readlines()
-        data[0] = format(f'{customer.get_name()};{password};{customer.get_account_number()};{customer.get_ktp()}\n')
+        data[0] = format(f'{customer.get_name()};{password};{customer.get_account_number()};{customer.get_ktp()};\n')
 
         with open(f'Banks/{customer.get_bank()}/Customers/{customer.get_account_number()}.txt', 'w') as file:
             file.writelines(data)
 
+    def add_user(self, customer, password):
+        with open(f'Banks/{customer.get_bank()}/Customers/{customer.get_account_number()}.txt', 'w') as file:
+            file.writelines(
+                format(f'{customer.get_name()};{password};{customer.get_account_number()};{customer.get_ktp()};\n'))
+
     def __put_banks(self):
-        self.bank_names = ('BNI', 'BRI', 'BTN', 'MANDIRI')
-        for bank in self.bank_names:
-            self.bank_code = 0
-            self.registered_ktp = {0}
-            self.bank_name = None
+        bank_names = ('BNI', 'BRI', 'BTN', 'MANDIRI')
+        for bank in bank_names:
+            bank_code = 0
+            registered_ktp = {0}
+            bank_name = None
             with open(f'Banks/{bank}/info.txt') as bf:
                 try:
-                    self.temp = bf.readline().split(';')
-                    self.bank_name = self.temp[0]
-                    self.bank_code = int(self.temp[1])
-                    self.customers = {}
+                    temp = bf.readline().split(';')
+                    bank_name = temp[0]
+                    bank_code = int(temp[1])
+                    customers = {}
                     for filename in glob.glob(os.path.join(f'Banks/{bank}/Customers', '*.txt')):
                         with open(filename, 'r') as cf:
-                            self.transaction_log = []
-                            self.money = 0
-                            self.cnt = 0
-                            self.corrupted = False
-                            self.customer_data = []
+                            transaction_log = []
+                            money = 0
+                            cnt = 0
+                            corrupted = False
+                            customer_data = []
                             for line in cf:
-                                if self.cnt == 0:
-                                    self.customer_data = line.split(';')
-                                    print(line)
+                                if cnt == 0:
+                                    customer_data = line.split(';')
+                                    registered_ktp.add(int(customer_data[3]))
                                 else:
-                                    print(line)
-                                    self.temp = line.split(';')
-                                    print('test ',self.temp[1],self.temp[2], end=' ')
-                                    if int(self.temp[0]) == 0:
+                                    temp = line.split(';')
+                                    if len(temp) < 2:
+                                        print('here')
+                                        continue
+                                    if int(temp[0]) == 0:
                                         # Deposit
-                                        self.transaction_log.append(Deposit(self.temp[1], self.temp[2]))
-                                        self.money += int(self.temp[2])
-                                    elif int(self.temp[0]) == 1:
+                                        transaction_log.append(Deposit(temp[1], temp[2]))
+                                        money += int(temp[2])
+                                    elif int(temp[0]) == 1:
                                         # Withdrawal
-                                        self.transaction_log.append(Withdrawal(self.temp[1], int(self.temp[2])))
-                                        self.money -= int(temp[2])
-                                    elif int(self.temp[0]) == 2:
-                                        # Outbound Transfer
-                                        self.transaction_log.append(
-                                            OutboundTransfer(self.temp[1], int(self.temp[2]), self.temp[3]))
-                                        self.money -= int(temp[2])
+                                        transaction_log.append(Withdrawal(temp[1], int(temp[2])))
+                                        money -= int(temp[2])
                                     elif int(temp[0]) == 2:
                                         # Inbound Transfer
-                                        self.transaction_log.append(
-                                            InboundTransfer(self.temp[1], int(self.temp[2]), self.temp[3]))
-                                        self.money += int(self.temp[2])
+                                        transaction_log.append(
+                                            InboundTransfer(temp[1], int(temp[2]), temp[3]))
+                                        money += int(temp[2])
+                                    elif int(temp[0]) == 3:
+                                        # Outbound Transfer
+                                        transaction_log.append(
+                                            OutboundTransfer(temp[1], int(temp[2]), temp[3]))
+                                        money -= int(temp[2])
                                     else:
-                                        self.error_log.append(f"{filename} is corrupted")
-                                        self.corrupted = True
-                                        self.registered_ktp.add(self.customer_data[3])
-                                self.cnt += 1
-                            if not self.corrupted:
-                                self.customers[int(self.customer_data[2])] = Customer(self.customer_data[0],
-                                                                                      self.customer_data[1],
-                                                                                      self.customer_data[2],
-                                                                                      self.customer_data[3],
-                                                                                      self.transaction_log, self.money,
-                                                                                      self.bank_name)
-                    self.banks.append(Bank(self.bank_name, self.bank_code, self.customers, self.registered_ktp))
-                    print(f'Successfully Added {self.bank_name}')
-                except Exception as err:
-                    self.error_log.append(f"{self.bank_name} is corrupted")
-                    print(f"{self.bank_name} is corrupted")
+                                        error_log.append(f"{filename} is corrupted")
+                                        corrupted = True
+                                cnt += 1
+                            if not corrupted:
+                                customers[int(customer_data[2])] = Customer(customer_data[0],
+                                                                            customer_data[1],
+                                                                            customer_data[2],
+                                                                            customer_data[3],
+                                                                            transaction_log, money,
+                                                                            bank_name)
+                    self.banks.append(Bank(bank_name, bank_code, customers, registered_ktp))
+                except Exception as er:
+                    self.error_log.append(f"{bank_name} is corrupted")
                     traceback.print_exc()
         self.print_error_log()
+
+

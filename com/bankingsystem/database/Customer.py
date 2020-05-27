@@ -1,5 +1,19 @@
 from com.bankingsystem.transactionlog.TransactionLog import *
-from com.bankingsystem.database.Database import *
+
+
+def update_transactions(customer, transaction):
+    if transaction.recipient_origin is None:
+        transaction.recipient_origin = ''
+    with open(f'Banks/{customer.get_bank()}/Customers/{customer.get_account_number()}.txt', 'r') as file:
+        data = file.readlines()
+        if len(data) == 1:
+            data += '\n'
+    data.append(
+        format(
+            f'{transaction.get_code()};{transaction.date_of_transaction};{transaction.amount};{transaction.recipient_origin}\n'))
+    with open(f'Banks/{customer.get_bank()}/Customers/{customer.get_account_number()}.txt', 'w') as file:
+        file.writelines(data)
+
 
 class Customer():
     def __init__(self, username, password, account_number, ktp_number, transaction_log, balance, bank):
@@ -52,17 +66,22 @@ class Customer():
         self.__authenticated = False
 
     def __str__(self):
-        if self.__authenticated:
-            return self.__account_number
+        return self.__account_number
 
     def outbound_transfer(self, amount, recipient):
         if self.__authenticated and self.__balance >= amount:
             self.__balance -= amount
-            self.__update_transaction_log(OutboundTransfer(None, amount, recipient._get_account_number()))
+            self.__update_transaction_log(OutboundTransfer(None, amount, recipient.get_account_number()))
+            recipient.__inbound_transfer(amount, self.__account_number)
             return True
+
+    def __inbound_transfer(self, amount, origin):
+        self.__balance += amount
+        self.__update_transaction_log(InboundTransfer(None, amount, origin))
 
     def __update_transaction_log(self, transaction):
         self.__transaction_log.append(transaction)
+        update_transactions(self, transaction)
 
     def __is_authenticated(self):
         return self.__authenticated

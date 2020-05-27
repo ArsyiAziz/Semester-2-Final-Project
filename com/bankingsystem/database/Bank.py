@@ -1,5 +1,5 @@
 from com.bankingsystem.database.Customer import Customer
-import re
+
 
 class Bank:
     def __init__(self, bank_name, bank_code, customers, registered_ktp):
@@ -9,28 +9,28 @@ class Bank:
         self.__registered_ktp = registered_ktp
 
     def __add_customer(self, username, password, account_number, ktp_number):
-        self.__customers.put(account_number,
-                             Customer(username, password, account_number, ktp_number, [], 0, self.__bank_name))
+        self.__customers[account_number] = Customer(username, password, account_number, ktp_number, [], 0, self.__bank_name)
+        self.__registered_ktp.add(int(ktp_number))
+        return self.__customers[account_number]
 
     def __str__(self):
         return self.__bank_name
 
-    def __register_customer(self, database):
-        try:
-            pass
-        except IndexError:
-            return False
+    def register_customer(self, ktp_number, fullname, password):
+        account_number = int(format(f'{self.__bank_code}{str(len(self.__customers) + 1).zfill(6)}'))
+        return self.__add_customer(fullname, password, account_number, ktp_number)
 
-    def __is_valid_password(self, password):
-        if 6 <= len(password) <= 12:
-            if re.search("[a-z]", password) and re.search("[A-Z]", password):
-                if not re.search("[0-9]", password) and re.search("[$#@]", password):
-                    return True
-        return False
+    def valid_ktp(self, ktp_number):
+        if ktp_number not in self.__registered_ktp:
+            return True
+        else:
+            return False
 
     def get_bank_name(self):
         return self.__bank_name
 
     def get_customer(self, account_number):
-        print(account_number)
-        return self.__customers[account_number]
+        try:
+            return self.__customers[account_number]
+        except KeyError:
+            return None
