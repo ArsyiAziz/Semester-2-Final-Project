@@ -30,5 +30,21 @@ class Portal:
         except:
             pass
 
+    def deposit(self, amount):
+        self.current_customer.deposit(amount)
+
+    def withdraw(self, amount):
+        return self.current_customer.withdraw(amount)
+
+    def change_password(self, old_password, new_password):
+        is_successful = self.current_customer.change_password(old_password, new_password)
+        if is_successful:
+            self.__database.update_user_password(self.current_customer, new_password)
+            return True
+        else:
+            return False
+
     def logout(self):
         self.current_customer.logout()
+        self.current_customer = None
+        self.current_bank = None

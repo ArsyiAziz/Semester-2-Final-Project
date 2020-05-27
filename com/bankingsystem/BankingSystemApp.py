@@ -12,9 +12,10 @@ class BankingSystemApp(tk.Tk):
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
-
+        self.resizable(width=False, height=False)
         self.frames = {}
-        for F in (StartPage, LoginPage, BankPage):
+        for F in (StartPage, LoginPage, BankPage, RegisterPage, DepositPage, WithdrawPage, TransferPage,
+                  BalancePage, TransactionHistoryPage, ChangePasswordPage):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
