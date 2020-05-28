@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>Python</ID>
+  <OriginalElement>com.bankingsystem.database.Portal.Portal</OriginalElement>
+  <nodes>
+    <node x="1244.0" y="1444.0">com.bankingsystem.database.Pages.LoginPage</node>
+    <node x="2028.0" y="1444.0">com.bankingsystem.database.Pages.BankPage</node>
+    <node x="0.0" y="1312.5">com.bankingsystem.transactionlog.TransactionLog.Withdrawal</node>
+    <node x="987.0" y="1312.5">com.bankingsystem.transactionlog.TransactionLog.Deposit</node>
+    <node x="395.0" y="1807.0">com.bankingsystem.database.Pages.StartPage</node>
+    <node x="1657.75" y="823.0">com.bankingsystem.database.Bank.Bank</node>
+    <node x="849.0" y="1444.0">com.bankingsystem.database.Database.Database</node>
+    <node x="1625.0" y="1444.0">com.bankingsystem.database.Pages.TransferPage</node>
+    <node x="2180.75" y="669.0">com.bankingsystem.database.Customer.Customer</node>
+    <node x="1260.75" y="768.0">com.bankingsystem.database.Portal.Portal</node>
+    <node x="472.0" y="1301.0">com.bankingsystem.transactionlog.TransactionLog.OutboundTransfer</node>
+    <node x="1437.0" y="1312.5">com.bankingsystem.transactionlog.TransactionLog.InboundTransfer</node>
+    <node x="776.0" y="1807.0">com.bankingsystem.database.Pages.TransactionHistoryPage</node>
+    <node x="0.0" y="1444.0">com.bankingsystem.database.Pages.ChangePasswordPage</node>
+    <node x="0.0" y="1807.0">com.bankingsystem.database.Pages.DepositPage</node>
+    <node x="446.0" y="1444.0">com.bankingsystem.database.Pages.RegisterPage</node>
+    <node x="2402.0" y="1444.0">com.bankingsystem.database.Pages.WithdrawPage</node>
+    <node x="1608.75" y="0.0">typing.Hashable</node>
+    <node x="1541.75" y="103.0">object</node>
+    <node x="1251.0" y="1807.0">com.bankingsystem.database.Pages.BalancePage</node>
+    <node x="680.75" y="856.0">com.bankingsystem.transactionlog.TransactionLog.Transaction</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="com.bankingsystem.database.Database.Database" target="object">
+      <point x="0.0" y="-137.0" />
+      <point x="2116.272727272727" y="649.0" />
+      <point x="2092.5" y="649.0" />
+      <point x="0.0" y="258.0" />
+    </edge>
+    <edge source="com.bankingsystem.transactionlog.TransactionLog.InboundTransfer" target="com.bankingsystem.transactionlog.TransactionLog.Transaction">
+      <point x="0.0" y="-37.5" />
+      <point x="1681.0" y="1271.0" />
+      <point x="1170.75" y="1271.0" />
+      <point x="210.0" y="104.0" />
+    </edge>
+    <edge source="com.bankingsystem.transactionlog.TransactionLog.Transaction" target="object">
+      <point x="0.0" y="-104.0" />
+      <point x="960.75" y="639.0" />
+      <point x="1576.125" y="639.0" />
+      <point x="-103.125" y="258.0" />
+    </edge>
+    <edge source="com.bankingsystem.database.Portal.Portal" target="object">
+      <point x="0.0" y="-192.0" />
+      <point x="1449.25" y="649.0" />
+      <point x="1644.875" y="649.0" />
+      <point x="-34.375" y="258.0" />
+    </edge>
+    <edge source="com.bankingsystem.database.Customer.Customer" target="object">
+      <point x="0.0" y="-291.0" />
+      <point x="2502.75" y="639.0" />
+      <point x="1782.375" y="639.0" />
+      <point x="103.125" y="258.0" />
+    </edge>
+    <edge source="object" target="typing.Hashable">
+      <point x="0.0" y="-258.0" />
+      <point x="0.0" y="26.5" />
+    </edge>
+    <edge source="com.bankingsystem.database.Bank.Bank" target="object">
+      <point x="0.0" y="-137.0" />
+      <point x="1909.25" y="649.0" />
+      <point x="1713.625" y="649.0" />
+      <point x="34.375" y="258.0" />
+    </edge>
+    <edge source="com.bankingsystem.transactionlog.TransactionLog.Deposit" target="com.bankingsystem.transactionlog.TransactionLog.Transaction">
+      <point x="0.0" y="-37.5" />
+      <point x="1202.0" y="1281.0" />
+      <point x="1030.75" y="1281.0" />
+      <point x="70.0" y="104.0" />
+    </edge>
+    <edge source="com.bankingsystem.transactionlog.TransactionLog.Withdrawal" target="com.bankingsystem.transactionlog.TransactionLog.Transaction">
+      <point x="0.0" y="-37.5" />
+      <point x="226.0" y="1271.0" />
+      <point x="750.75" y="1271.0" />
+      <point x="-210.0" y="104.0" />
+    </edge>
+    <edge source="com.bankingsystem.transactionlog.TransactionLog.OutboundTransfer" target="com.bankingsystem.transactionlog.TransactionLog.Transaction">
+      <point x="0.0" y="-49.0" />
+      <point x="719.5" y="1281.0" />
+      <point x="890.75" y="1281.0" />
+      <point x="-70.0" y="104.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.6691714997792124" x="761.563470907771" y="1006.2591339782359" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Methods</Category>
+    <Category>Fields</Category>
+  </Categories>
+</Diagram>
+

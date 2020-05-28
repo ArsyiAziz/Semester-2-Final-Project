@@ -20,10 +20,10 @@ class Transaction:
         data = format(f"Date : {self.date_of_transaction}\n")
         data += format(f"Transaction Type : {self.transaction_type}\n")
         data += format(f"Amount : {self.amount}\n")
-        if self.__transaction_type == "Outbound Transfer\n":
-            data += format(f"To : {self.recipient_origin}")
-        elif self.__transaction_type == "Inbound Transfer\n":
-            data += format(f"From : {self.recipient_origin}")
+        if self.transaction_type == "Outbound Transfer":
+            data += format(f"To : {self.recipient_origin}\n")
+        elif self.transaction_type == "Inbound Transfer":
+            data += format(f"From : {self.recipient_origin}\n")
         return data
 
 

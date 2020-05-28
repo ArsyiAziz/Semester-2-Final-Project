@@ -10,7 +10,7 @@ def update_transactions(customer, transaction):
             data += '\n'
     data.append(
         format(
-            f'{transaction.get_code()};{transaction.date_of_transaction};{transaction.amount};{transaction.recipient_origin}\n'))
+            f'{transaction.get_code()};{transaction.date_of_transaction};{transaction.amount};{transaction.recipient_origin};\n'))
     with open(f'Banks/{customer.get_bank()}/Customers/{customer.get_account_number()}.txt', 'w') as file:
         file.writelines(data)
 
@@ -69,7 +69,7 @@ class Customer():
         return self.__account_number
 
     def outbound_transfer(self, amount, recipient):
-        if self.__authenticated and self.__balance >= amount:
+        if self.__authenticated and self.__balance >= amount and recipient is not None:
             self.__balance -= amount
             self.__update_transaction_log(OutboundTransfer(None, amount, recipient.get_account_number()))
             recipient.__inbound_transfer(amount, self.__account_number)

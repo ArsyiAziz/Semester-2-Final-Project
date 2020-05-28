@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox
 import tkinter.scrolledtext as scrolledtext
 
 from PIL import ImageTk, Image
@@ -18,9 +18,23 @@ def register_customer(controller, register_page):
     ktp = register_page.ktp.get()
     fullname = register_page.fullname.get()
     password = register_page.password.get()
-    is_successful = portal.register_customer(ktp, fullname, password)
+    if ktp == '' or fullname == '' or password == '':
+        return
+    is_successful = True
+    if not portal.valid_ktp(ktp):
+        register_page.ktp.set('')
+        is_successful = False
+        messagebox.showerror("Error!", "KTP has already been registered!")
+    if not portal.valid_password(password):
+        register_page.password.set('')
+        is_successful = False
+        messagebox.showerror("Error!", "Invalid password!\n (Password must contain 6-12 characters, a "
+                                       "lowercase character, uppercase character, and a number")
+    portal.register_customer(ktp, fullname, password)
     if is_successful:
         controller.frames[BankPage].customer_name.set('Hello, ' + portal.current_customer.get_name())
+        messagebox.showinfo("Success!", "Write The following information down!")
+        messagebox.showinfo("Account Overview", f"Name: {portal.current_customer.get_name()}\nAccount number: {portal.current_customer.get_account_number()}")
         controller.show_frame(BankPage)
 
 def get_customer_balance():
@@ -29,14 +43,21 @@ def get_customer_balance():
     return customer_balance
 
 
+def update_transaction_history(controller):
+    for transaction in portal.current_customer.get_transaction_log():
+        controller.frames[TransactionHistoryPage].st.insert(tk.INSERT, str(transaction) + "\n")
+
+
 def change_bank(controller, current_bank):
     current_bank_name.set(bank_names[current_bank])
     controller.show_frame(LoginPage)
     portal.set_bank(current_bank)
 
+
 def login(controller, login_page):
     account_number = None
     password = login_page.password.get()
+    if_valid = True
     try:
         account_number = int(login_page.account_number.get())
     except:
@@ -47,6 +68,8 @@ def login(controller, login_page):
         login_page.account_number.set('')
         controller.frames[BankPage].customer_name.set('Hello, ' + portal.current_customer.get_name())
         controller.show_frame(BankPage)
+        return
+    messagebox.showerror("Error", "Invalid credentials!")
 
 
 def logout(controller):
@@ -56,14 +79,27 @@ def logout(controller):
 
 def change_password(controller, old_password, new_password, verify_password, change_password_page):
     if verify_password == new_password:
+        if not portal.valid_password(new_password):
+            messagebox.showerror("Error!", "Invalid password!\n (Password must contain 6-12 characters, a "
+                                           "lowercase character, uppercase character, and a number")
+            change_password_page.new_password.set('')
+            change_password_page.verify_password.set('')
+            return
         is_successful = portal.change_password(old_password, new_password)
         if is_successful:
             change_password_page.new_password.set('')
             change_password_page.old_password.set('')
             change_password_page.verify_password.set('')
+            messagebox.showinfo("Success!", "Successfully changed password!")
             controller.show_frame(BankPage)
         else:
+            messagebox.showinfo("Error!", "Invalid Password!")
             change_password_page.old_password.set('')
+    else:
+        messagebox.showinfo("Error!", "Password doesn't match!")
+        controller.frames[ChangePasswordPage].new_password.set('')
+        controller.frames[ChangePasswordPage].verify_password.set('')
+
 
 
 def deposit(controller, deposit_page):
@@ -71,9 +107,11 @@ def deposit(controller, deposit_page):
         amount = int(deposit_page.amount.get())
         portal.deposit(amount)
     except ValueError:
-        deposit_page.amount.set('Invalid amount!')
+        messagebox.showerror("Invalid amount!", "Invalid amount!")
+        deposit_page.amount.set('')
         return
     deposit_page.amount.set('')
+    messagebox.showinfo("Success", f"Successfully deposited Rp. {amount}")
     controller.show_frame(BankPage)
 
 
@@ -82,26 +120,46 @@ def withdraw(controller, withdraw_page):
         amount = int(withdraw_page.amount.get())
         is_successful = portal.withdraw(amount)
     except ValueError:
-        withdraw_page.amount.set('Invalid amount!')
+        messagebox.showerror("Invalid amount!", "Invalid amount!")
+        withdraw_page.amount.set('')
         return
     if is_successful:
+        messagebox.showinfo("Success", f"Successfully withdrew Rp. {amount}")
         controller.show_frame(BankPage)
     else:
-        withdraw_page.amount.set('Insufficient Funds!')
+        messagebox.showerror("Insufficient funds!", "Insufficient funds!")
+        withdraw_page.amount.set('')
+
 
 
 def transfer(controller, transfer_page):
+    amount, destination, is_valid = None, None, True
     try:
         amount = int(transfer_page.amount.get())
-        destination = int(transfer_page.destination.get())
+        try:
+            destination = int(transfer_page.destination.get())
+        except ValueError:
+            messagebox.showinfo("Error", "Invalid account number!")
+            transfer_page.destination.set('')
+            is_valid = False
     except ValueError:
-        pass
-    is_successful = portal.transfer(amount, destination)
-    if is_successful:
+        messagebox.showinfo("Error", "Invalid amount!")
         transfer_page.amount.set('')
+        is_valid = False
+    if destination != portal.current_customer.get_account_number() and is_valid:
+        is_successful = portal.transfer(amount, destination)
+        if is_successful:
+            transfer_page.amount.set('')
+            transfer_page.destination.set('')
+            controller.show_frame(BankPage)
+            messagebox.showinfo("Success", f"Successfully transferred Rp. {amount}\n to {destination}")
+            return
+        else:
+            transfer_page.destination.set('')
+            messagebox.showinfo("Error", "Invalid account number!")
+    elif destination == portal.current_customer.get_account_number():
         transfer_page.destination.set('')
-        controller.show_frame(BankPage)
-
+        messagebox.showinfo("Error", "Invalid account number!")
 
 
 class StartPage(tk.Frame):
@@ -187,7 +245,9 @@ class RegisterPage(tk.Frame):
         self.password_label = tk.Label(self, text="Password").grid(row=5, column=1, sticky="nesw")
         self.password_entry = tk.Entry(self, textvariable=self.password).grid(row=5, column=2, sticky="nesw")
         self.back_btn = tk.Button(self, text="Back",
-                                  command=lambda: [controller.show_frame(LoginPage), self.ktp.set(''), self.password.set(''), self.fullname.set('')]).grid(row=6, column=1, sticky="nsew")
+                                  command=lambda: [controller.show_frame(LoginPage), self.ktp.set(''),
+                                                   self.password.set(''), self.fullname.set('')]).grid(row=6, column=1,
+                                                                                                       sticky="nsew")
         self.register_btn = tk.Button(self, text="Register",
                                       command=lambda: register_customer(controller, self)).grid(row=6, column=2,
                                                                                                 sticky="nsew")
@@ -220,8 +280,9 @@ class BankPage(tk.Frame):
             column=1, sticky="nsew")
         self.transaction_history_btn = tk.Button(self, text="Transaction History",
                                                  command=lambda:
-                                                 controller.show_frame(TransactionHistoryPage)).grid(row=7, column=1,
-                                                                                                     sticky="nsew")
+                                                 [controller.show_frame(TransactionHistoryPage),
+                                                  update_transaction_history(controller)]).grid(row=7, column=1,
+                                                                                                sticky="nsew")
 
         self.change_password_btn = tk.Button(self, text="Change Password",
                                              command=lambda:
@@ -293,7 +354,7 @@ class TransferPage(tk.Frame):
                                   command=lambda: [controller.show_frame(BankPage),
                                                    self.amount.set('')]).grid(row=6, column=1, sticky="nsew")
         self.transfer_btn = tk.Button(self, text="Deposit",
-                                     command=lambda: transfer(controller, self)).grid(row=6, column=2, sticky="nsew")
+                                      command=lambda: transfer(controller, self)).grid(row=6, column=2, sticky="nsew")
         self.grid_rowconfigure(7, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(7, weight=1)
@@ -320,6 +381,17 @@ class TransactionHistoryPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.label = tk.Label(self, text="Transaction History", font=LARGE_FONT).grid(row=1, column=1, sticky="nsew")
+
+        self.st = scrolledtext.ScrolledText(self)
+        self.st.grid(row=2, column=1, padx=10)
+        self.back_btn = tk.Button(self, text="Back",
+                                  command=lambda: [controller.show_frame(BankPage),
+                                                   self.st.delete(1.0, tk.END)]).grid(row=6, column=1, sticky="nsew")
+        self.grid_rowconfigure(7, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(7, weight=1)
+        self.grid_columnconfigure(3, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
 
 class ChangePasswordPage(tk.Frame):
@@ -361,3 +433,8 @@ class ChangePasswordPage(tk.Frame):
                                                                              self)).grid(row=6,
                                                                                          column=2,
                                                                                          sticky="nsew")
+        self.grid_rowconfigure(7, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(7, weight=1)
+        self.grid_columnconfigure(3, weight=1)
+        self.grid_rowconfigure(0, weight=1)
